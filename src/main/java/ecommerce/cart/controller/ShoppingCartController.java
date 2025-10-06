@@ -36,4 +36,18 @@ public class ShoppingCartController {
     cartService.addItem(userId, item);
     return ResponseEntity.ok().build();
   }
+
+  @Operation(
+      summary = "Get the user's shopping cart",
+      description =
+          """
+        Retrieves the shopping cart for the requesting user. <br>
+        If the cart does not exist, an empty cart will be returned.
+      """)
+  @GetMapping
+  public ResponseEntity<ShoppingCart> getCart(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt) {
+    String userId = Tools.extractUserId(jwt);
+    return ResponseEntity.ok(cartService.getCart(userId));
+  }
 }
