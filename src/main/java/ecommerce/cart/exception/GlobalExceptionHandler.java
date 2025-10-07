@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -47,6 +48,15 @@ public class GlobalExceptionHandler {
         .body(new ErrorResponse("Validation failed", fieldErrors));
   }
 
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ErrorResponse> handleMissingServletRequestParameter(
+      MissingServletRequestParameterException ex) {
+    Map<String, String> details = new HashMap<>();
+    details.put(ex.getParameterName(), "Parameter is missing");
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse("Missing request parameter", details));
+  }
+
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
     Map<String, String> violations = new HashMap<>();
@@ -78,6 +88,13 @@ public class GlobalExceptionHandler {
             + (ex.getRequiredType() == null ? "unknown" : ex.getRequiredType().getSimpleName()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(new ErrorResponse("Type mismatch", details));
+  }
+
+  @ExceptionHandler({ValidationException.class})
+  public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
+    log.error("Validation exception", ex);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(ex.getMessage(), null));
   }
 
   @ExceptionHandler(Exception.class)
