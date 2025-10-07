@@ -21,14 +21,4 @@ public class ShoppingCart implements Serializable {
   public Optional<CartItem> getItem(String productId) {
     return this.items.stream().filter(item -> item.getProductId().equals(productId)).findFirst();
   }
-
-  public void add(CartItem item) {
-    Optional<CartItem> foundItem = getItem(item.getProductId());
-    if (foundItem.isPresent()) {
-      CartItem existingItem = foundItem.get();
-      existingItem.setQuantity(existingItem.getQuantity() + item.getQuantity());
-    } else {
-      this.items.add(item);
-    }
-  }
 }
