@@ -6,7 +6,9 @@ import ecommerce.cart.util.Tools;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +34,42 @@ public class ShoppingCartController {
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
       @RequestParam @NotBlank String productId) {
     String userId = Tools.extractUserId(jwt);
-    cartService.addItem(userId, productId);
-    return ResponseEntity.ok().build();
+    ShoppingCart cart = cartService.addItem(userId, productId);
+    return ResponseEntity.ok().body(cart);
+  }
+
+  @Operation(
+      summary = "Set the quantity of an item in the user's shopping cart",
+      description =
+          """
+      Updates the quantity of a specified item in the shopping cart of the requesting user. <br>
+      If the quantity is set to 0, the item will be removed from the cart. <br>
+      Stock availability is checked before updating if the quantity is increased.
+    """)
+  @PutMapping("/items")
+  public ResponseEntity<ShoppingCart> updateItemQuantity(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
+      @RequestParam @NotBlank String productId,
+      @RequestParam @NotNull @Min(0) Integer quantity) {
+    String userId = Tools.extractUserId(jwt);
+    ShoppingCart cart = cartService.updateItemQuantity(userId, productId, quantity);
+    return ResponseEntity.ok().body(cart);
+  }
+
+  @Operation(
+      summary = "Remove an item from the user's shopping cart",
+      description =
+          """
+        Removes a specified item from the shopping cart of the requesting user. <br>
+        If the item does not exist in the cart, no action is taken.
+      """)
+  @DeleteMapping("/items")
+  public ResponseEntity<ShoppingCart> removeItemFromCart(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
+      @RequestParam @NotBlank String productId) {
+    String userId = Tools.extractUserId(jwt);
+    ShoppingCart cart = cartService.removeItemFromCart(userId, productId);
+    return ResponseEntity.ok().body(cart);
   }
 
   @Operation(

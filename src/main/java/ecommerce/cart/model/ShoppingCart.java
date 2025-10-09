@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @Data
@@ -20,5 +22,14 @@ public class ShoppingCart implements Serializable {
 
   public Optional<CartItem> getItem(String productId) {
     return this.items.stream().filter(item -> item.getProductId().equals(productId)).findFirst();
+  }
+
+  @JsonIgnore
+  public boolean isEmpty() {
+    return this.items.isEmpty();
+  }
+
+  public void removeItem(String productId) {
+    this.items.removeIf(i -> i.getProductId().equals(productId));
   }
 }

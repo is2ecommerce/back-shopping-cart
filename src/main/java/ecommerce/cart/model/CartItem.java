@@ -22,4 +22,10 @@ public class CartItem implements Serializable {
       this.quantity -= 1;
     }
   }
+
+  public void setQuantity(int quantity) {
+    if (quantity >= 0) {
+      this.quantity = quantity;
+    }
+  }
 }

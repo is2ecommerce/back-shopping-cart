@@ -16,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @Slf4j
@@ -46,6 +47,25 @@ public class GlobalExceptionHandler {
     }
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(new ErrorResponse("Validation failed", fieldErrors));
+  }
+
+  @ExceptionHandler(HandlerMethodValidationException.class)
+  public ResponseEntity<ErrorResponse> handleHandlerMethodValidationException(
+      HandlerMethodValidationException ex) {
+
+    Map<String, String> fieldErrors = new HashMap<>();
+
+    ex.getValueResults()
+        .forEach(
+            validationResult -> {
+              String paramName = validationResult.getMethodParameter().getParameterName();
+              String errorMessage =
+                  validationResult.getResolvableErrors().getFirst().getDefaultMessage();
+              fieldErrors.put(paramName, errorMessage);
+            });
+
+    ErrorResponse response = new ErrorResponse("Validation failed", fieldErrors);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
