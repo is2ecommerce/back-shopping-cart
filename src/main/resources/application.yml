@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: cart
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      password: ${REDIS_PASSWORD}
+      port: ${REDIS_PORT:6379}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+server:
+  servlet:
+    context-path: /shopping-cart
+springdoc:
+  swagger-ui:
+    path: /docs
+service:
+  catalog:
+    url: http://localhost:8081
