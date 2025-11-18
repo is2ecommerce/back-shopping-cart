@@ -1,6 +1,7 @@
 package ecommerce.cart.service;
 
 import ecommerce.cart.model.ShoppingCart;
+import java.util.UUID;
 
 public interface CartService {
   /**
@@ -10,7 +11,7 @@ public interface CartService {
    * @param userId the user's unique identifier
    * @param productId the product's unique identifier
    */
-  ShoppingCart addItem(String userId, String productId);
+  ShoppingCart addItem(UUID userId, UUID productId);
 
   /**
    * Get the user's shopping cart. If the cart does not exist, an empty cart will be returned.
@@ -18,7 +19,7 @@ public interface CartService {
    * @param userId the user's unique identifier
    * @return the shopping cart
    */
-  ShoppingCart getCart(String userId);
+  ShoppingCart getCart(UUID userId);
 
   /**
    * Update the quantity of an item in the user's shopping cart. If the new quantity is 0, the item
@@ -30,7 +31,7 @@ public interface CartService {
    * @param newQuantity new quantity to set
    * @return user's updated shopping cart
    */
-  ShoppingCart updateItemQuantity(String userId, String productId, Integer newQuantity);
+  ShoppingCart updateItemQuantity(UUID userId, UUID productId, Integer newQuantity);
 
   /**
    * Remove an item from the user's shopping cart regardless of its quantity
@@ -39,5 +40,12 @@ public interface CartService {
    * @param productId item to remove
    * @return user's updated shopping cart
    */
-  ShoppingCart removeItemFromCart(String userId, String productId);
+  ShoppingCart removeItemFromCart(UUID userId, UUID productId);
+
+  /**
+   * Checkout the user's shopping cart, triggering order processing and clearing the cart
+   *
+   * @param userId the user's unique identifier
+   */
+  void checkout(UUID userId);
 }

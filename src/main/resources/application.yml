@@ -4,7 +4,7 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST:localhost}
-      password: ${REDIS_PASSWORD}
+      password: ${REDIS_PASSWORD:securepassword}
       port: ${REDIS_PORT:6379}
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
@@ -17,6 +17,15 @@ server:
 springdoc:
   swagger-ui:
     path: /docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      access: unrestricted
 service:
   catalog:
     url: http://localhost:8081

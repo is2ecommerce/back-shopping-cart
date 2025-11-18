@@ -2,6 +2,7 @@ package ecommerce.cart.controller;
 
 import ecommerce.cart.model.ShoppingCart;
 import ecommerce.cart.service.CartService;
+import ecommerce.cart.service.rabbit.RabbitPublisher;
 import ecommerce.cart.util.Tools;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,12 +15,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Shopping Cart")
 @RequestMapping("/api/cart")
 public class ShoppingCartController {
   private final CartService cartService;
+
   @Operation(
       summary = "Add an item to the user's shopping cart",
       description =
@@ -32,8 +36,8 @@ public class ShoppingCartController {
   @PostMapping("/items")
   public ResponseEntity<ShoppingCart> addItemToCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
-      @RequestParam @NotBlank String productId) {
-    String userId = Tools.extractUserId(jwt);
+      @RequestParam @NotNull UUID productId) {
+    UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.addItem(userId, productId);
     return ResponseEntity.ok().body(cart);
   }
@@ -49,9 +53,9 @@ public class ShoppingCartController {
   @PutMapping("/items")
   public ResponseEntity<ShoppingCart> updateItemQuantity(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
-      @RequestParam @NotBlank String productId,
+      @RequestParam @NotNull UUID productId,
       @RequestParam @NotNull @Min(0) Integer quantity) {
-    String userId = Tools.extractUserId(jwt);
+    UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.updateItemQuantity(userId, productId, quantity);
     return ResponseEntity.ok().body(cart);
   }
@@ -66,8 +70,8 @@ public class ShoppingCartController {
   @DeleteMapping("/items")
   public ResponseEntity<ShoppingCart> removeItemFromCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
-      @RequestParam @NotBlank String productId) {
-    String userId = Tools.extractUserId(jwt);
+      @RequestParam @NotNull UUID productId) {
+    UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.removeItemFromCart(userId, productId);
     return ResponseEntity.ok().body(cart);
   }
@@ -82,7 +86,20 @@ public class ShoppingCartController {
   @GetMapping
   public ResponseEntity<ShoppingCart> getCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt) {
-    String userId = Tools.extractUserId(jwt);
+    UUID userId = Tools.extractUserId(jwt);
     return ResponseEntity.ok(cartService.getCart(userId));
+  }
+
+  @Operation(
+      summary = "Checkout the user's shopping cart",
+      description =
+          """
+        Checks out the shopping cart for the requesting user, triggering order processing and clearing the cart.
+      """)
+  @PostMapping("/checkout")
+  public ResponseEntity<Void> checkout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+    UUID userId = Tools.extractUserId(token);
+    cartService.checkout(userId);
+    return ResponseEntity.ok().build();
   }
 }
