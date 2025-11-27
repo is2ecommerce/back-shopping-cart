@@ -61,7 +61,9 @@ public class GlobalExceptionHandler {
             validationResult -> {
               String paramName = validationResult.getMethodParameter().getParameterName();
               String errorMessage =
-                  validationResult.getResolvableErrors().getFirst().getDefaultMessage();
+                  validationResult.getResolvableErrors().isEmpty() 
+                      ? "Validation error" 
+                      : validationResult.getResolvableErrors().get(0).getDefaultMessage();
               fieldErrors.put(paramName, errorMessage);
             });
 

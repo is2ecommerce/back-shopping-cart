@@ -1,5 +1,7 @@
 package ecommerce.cart.controller;
 
+import ecommerce.cart.dto.ShoppingCartDTO;
+import ecommerce.cart.mapper.CartMapper;
 import ecommerce.cart.model.ShoppingCart;
 import ecommerce.cart.service.CartService;
 import ecommerce.cart.service.rabbit.RabbitPublisher;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequestMapping("/api/cart")
 public class ShoppingCartController {
   private final CartService cartService;
+  private final CartMapper cartMapper;
 
   @Operation(
       summary = "Add an item to the user's shopping cart",
@@ -34,12 +37,12 @@ public class ShoppingCartController {
         Stock availability is checked before adding the item.
     """)
   @PostMapping("/items")
-  public ResponseEntity<ShoppingCart> addItemToCart(
+  public ResponseEntity<ShoppingCartDTO> addItemToCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
       @RequestParam @NotNull UUID productId) {
     UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.addItem(userId, productId);
-    return ResponseEntity.ok().body(cart);
+    return ResponseEntity.ok().body(cartMapper.toDTO(cart));
   }
 
   @Operation(
@@ -51,13 +54,13 @@ public class ShoppingCartController {
       Stock availability is checked before updating if the quantity is increased.
     """)
   @PutMapping("/items")
-  public ResponseEntity<ShoppingCart> updateItemQuantity(
+  public ResponseEntity<ShoppingCartDTO> updateItemQuantity(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
       @RequestParam @NotNull UUID productId,
       @RequestParam @NotNull @Min(0) Integer quantity) {
     UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.updateItemQuantity(userId, productId, quantity);
-    return ResponseEntity.ok().body(cart);
+    return ResponseEntity.ok().body(cartMapper.toDTO(cart));
   }
 
   @Operation(
@@ -68,12 +71,12 @@ public class ShoppingCartController {
         If the item does not exist in the cart, no action is taken.
       """)
   @DeleteMapping("/items")
-  public ResponseEntity<ShoppingCart> removeItemFromCart(
+  public ResponseEntity<ShoppingCartDTO> removeItemFromCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt,
       @RequestParam @NotNull UUID productId) {
     UUID userId = Tools.extractUserId(jwt);
     ShoppingCart cart = cartService.removeItemFromCart(userId, productId);
-    return ResponseEntity.ok().body(cart);
+    return ResponseEntity.ok().body(cartMapper.toDTO(cart));
   }
 
   @Operation(
@@ -84,10 +87,10 @@ public class ShoppingCartController {
         If the cart does not exist, an empty cart will be returned.
       """)
   @GetMapping
-  public ResponseEntity<ShoppingCart> getCart(
+  public ResponseEntity<ShoppingCartDTO> getCart(
       @RequestHeader(HttpHeaders.AUTHORIZATION) @Parameter(hidden = true) String jwt) {
     UUID userId = Tools.extractUserId(jwt);
-    return ResponseEntity.ok(cartService.getCart(userId));
+    return ResponseEntity.ok(cartMapper.toDTO(cartService.getCart(userId)));
   }
 
   @Operation(
